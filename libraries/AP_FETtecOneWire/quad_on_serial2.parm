@@ -5,8 +5,8 @@ SERIAL2_PROTOCOL 38
 SERIAL2_OPTIONS 0
 
 # Use the full digital range supported by the ESCs
-MOT_PWM_MAX 2000
-MOT_PWM_MIN 1000
+MOT_PWM_MAX 1700
+MOT_PWM_MIN 1300
 
 # Make sure the correct functions get routed out
 SERVO1_FUNCTION 33

@@ -34,10 +34,10 @@
     "hoverThrOut" : 0.36,
 
     # MOT_PWM_MIN
-    "pwmMin" : 1000,
+    "pwmMin" : 1300,
 
     # MOT_PWM_MAX
-    "pwmMax" : 1940,
+    "pwmMax" : 1700,
 
     # MOT_SPIN_MIN
     "spin_min" : 0.2,

@@ -1,8 +1,8 @@
 # defaults for SkyRocket streaming GPS board
 BRD_IO_ENABLE 0
 MOT_PWM_TYPE 3
-MOT_PWM_MIN 1000
-MOT_PWM_MAX 2000
+MOT_PWM_MIN 1300
+MOT_PWM_MAX 1700
 RC_SPEED 16000
 
 # toy mode setup
