@@ -2,7 +2,8 @@
 
 
 bool ModeAlthold::init(bool ignore_checks) {
-    if(!sub.control_check_barometer()) {
+    // Allow ALT_HOLD if either depth sensor is OK or a healthy rangefinder is available
+    if(!sub.control_check_barometer() && !sub.rangefinder_alt_ok()) {
         return false;
     }
 
@@ -13,6 +14,21 @@ bool ModeAlthold::init(bool ignore_checks) {
 
     // initialise position and desired velocity
     position_control->init_U_controller();
+
+    // By default, ALT_HOLD uses baro/depth. If rangefinder is healthy, allow terrain-relative control
+    _use_rangefinder = sub.rangefinder_alt_ok();
+#if AP_RANGEFINDER_ENABLED
+    if (_use_rangefinder) {
+        // set initial target to maintain current terrain-relative distance
+        _rng_target_cm = sub.rangefinder_state.alt * 100.0f; // meters -> cm
+        // initialize terrain offset to keep current depth relative to terrain
+        float terrain_offset_cm = sub.inertial_nav.get_position_z_up_cm() - _rng_target_cm;
+        position_control->init_pos_terrain_U_cm(terrain_offset_cm);
+    } else {
+        // reset any previous terrain offset
+        position_control->init_pos_terrain_U_cm(0);
+    }
+#endif
 
     sub.last_pilot_heading = ahrs.yaw_sensor;
 
@@ -121,6 +137,24 @@ void ModeAlthold::control_depth() {
         } else if (sub.ap.at_bottom) {
             position_control->set_pos_desired_U_cm(MAX(inertial_nav.get_position_z_up_cm() + 10.0f, position_control->get_pos_desired_U_cm())); // set target to 10 cm above bottom
         }
+#if AP_RANGEFINDER_ENABLED
+        else {
+            // Typical operation: maintain terrain-relative target if rangefinder is healthy
+            if (sub.rangefinder_alt_ok()) {
+                if (!_use_rangefinder) {
+                    _use_rangefinder = true;
+                    _rng_target_cm = sub.rangefinder_state.alt * 100.0f;
+                    float terrain_offset_cm = sub.inertial_nav.get_position_z_up_cm() - _rng_target_cm;
+                    position_control->init_pos_terrain_U_cm(terrain_offset_cm);
+                }
+                position_control->set_pos_terrain_target_U_cm(sub.rangefinder_state.rangefinder_terrain_offset_cm);
+            } else if (_use_rangefinder) {
+                // lost rangefinder, fall back
+                _use_rangefinder = false;
+                position_control->init_pos_terrain_U_cm(0);
+            }
+        }
+#endif
     }
 
     position_control->set_pos_target_U_from_climb_rate_cm(target_climb_rate_cm_s);

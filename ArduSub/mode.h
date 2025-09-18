@@ -212,6 +212,12 @@ protected:
     const char *name() const override { return "ALT_HOLD"; }
     const char *name4() const override { return "ALTH"; }
     Mode::Number number() const override { return Mode::Number::ALT_HOLD; }
+
+private:
+    // When true, ALT_HOLD uses rangefinder readings to control depth (terrain-relative)
+    bool _use_rangefinder = false;
+    // Desired distance to terrain (cm) when using rangefinder
+    float _rng_target_cm = 0.0f;
 };
 
 
@@ -411,6 +417,12 @@ protected:
     const char *name4() const override { return "SURF"; }
     Mode::Number number() const override { return Mode::Number::SURFACE; }
     bool nobaro_mode;
+
+private:
+    // rangefinder hold state
+    bool _target_set = false;       // true once we've initialised the hold distance from RF
+    float _rng_target_cm = 0.0f;    // desired constant RF distance to hold (cm)
+    float _z0_cm = 0.0f;            // EKF Z at the moment we latched the RF target
 };
 
 

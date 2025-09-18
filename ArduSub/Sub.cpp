@@ -360,6 +360,11 @@ void Sub::update_altitude()
     // read in baro altitude
     read_barometer();
 
+#if AP_RANGEFINDER_ENABLED
+    // also update rangefinder state so it can be used as primary altitude source
+    read_rangefinder();
+#endif
+
 #if HAL_LOGGING_ENABLED
     if (should_log(MASK_LOG_CTUN)) {
         Log_Write_Control_Tuning();
@@ -375,14 +380,26 @@ void Sub::update_altitude()
 
 bool Sub::control_check_barometer()
 {
-    if (!ap.depth_sensor_present) { // can't hold depth without a depth sensor
-        gcs().send_text(MAV_SEVERITY_WARNING, "Depth sensor is not connected.");
-        return false;
-    } else if (failsafe.sensor_health) {
-        gcs().send_text(MAV_SEVERITY_WARNING, "Depth sensor error.");
-        return false;
+    // Accept either depth sensor (baro) or a healthy rangefinder for altitude-enabled modes
+    const bool depth_present = ap.depth_sensor_present;
+    const bool depth_healthy = !failsafe.sensor_health && barometer.healthy(depth_sensor_idx);
+#if AP_RANGEFINDER_ENABLED
+    const bool rf_ok = rangefinder_alt_ok();
+#else
+    const bool rf_ok = false;
+#endif
+
+    if ((depth_present && depth_healthy) || rf_ok) {
+        return true;
     }
-    return true;
+
+    // Provide meaningful warnings when neither source is available
+    if (!depth_present) {
+        gcs().send_text(MAV_SEVERITY_WARNING, "Depth sensor not connected and no healthy rangefinder.");
+    } else if (!depth_healthy) {
+        gcs().send_text(MAV_SEVERITY_WARNING, "Depth sensor error and no healthy rangefinder.");
+    }
+    return false;
 }
 
 // vehicle specific waypoint info helpers
