@@ -115,9 +115,9 @@ private:
 
         // MOT params are from the reference test
         // MOT_PWM_MIN
-        float pwmMin = 1000;
+        float pwmMin = 1300;
         // MOT_PWM_MAX
-        float pwmMax = 2000;
+        float pwmMax = 1700;
         // MOT_SPIN_MIN
         float spin_min = 0.15;
         // MOT_SPIN_MAX
