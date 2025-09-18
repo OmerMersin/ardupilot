@@ -438,8 +438,8 @@ static const struct AP_Param::defaults_table_struct defaults_table[] = {
 #endif
     { "RC7_OPTION",          214},   // MOUNT1_YAW
     { "RC8_OPTION",          213},   // MOUNT1_PITCH
-    { "MOT_PWM_MIN",         1100},
-    { "MOT_PWM_MAX",         1900},
+    { "MOT_PWM_MIN",         1300},
+    { "MOT_PWM_MAX",         1700},
     { "PSC_JERK_Z",          50.0f},
     { "WPNAV_SPEED",         100.0f},
     { "PILOT_SPEED_UP",      100.0f},
